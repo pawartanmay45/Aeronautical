@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AESA — Aeronautical Engineering Students Association</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FAFAF8;
+    --paper-2:#F1F0EB;
+    --ink:#101012;
+    --steel:#6B6E73;
+    --steel-light:#A8AAAE;
+    --line:rgba(16,16,18,0.14);
+    --line-strong:rgba(16,16,18,0.28);
+    --beacon:#FF5A1F;
+    --grid:rgba(16,16,18,0.06);
+    --maxw:1180px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    overflow-x:hidden;
+    transition:background .35s ease, color .35s ease;
+  }
+  body.dark{
+    --paper:#0B0B0D;
+    --paper-2:#1A1A1D;
+    --ink:#F2F1EC;
+    --steel:#9A9CA0;
+    --steel-light:#6B6E73;
+    --line:rgba(255,255,255,0.14);
+    --line-strong:rgba(255,255,255,0.28);
+    --grid:rgba(255,255,255,0.06);
+    --header-bg:rgba(11,11,13,0.86);
+  }
+  ::selection{background:var(--ink); color:var(--paper);}
+
+  .mono{font-family:'JetBrains Mono', monospace;}
+  .display{font-family:'Big Shoulders Display', sans-serif; text-transform:uppercase;}
+
+  /* Blueprint grid background */
+  .grid-bg{
+    position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size:36px 36px;
+  }
+
+  /* ---------- NAV ---------- */
+  header{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 32px;
+    background:var(--header-bg, rgba(250,250,248,0.86));
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand-mark{
+    width:30px; height:30px; border:1.5px solid var(--ink);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:600;
+    transform:rotate(45deg);
+  }
+  .brand-mark span{transform:rotate(-45deg);}
+  .brand-name{font-family:'Big Shoulders Display', sans-serif; font-weight:800; font-size:20px; letter-spacing:0.04em;}
+  .brand-name small{display:block; font-family:'JetBrains Mono', monospace; font-size:9px; color:var(--steel); letter-spacing:0.12em; font-weight:400; text-transform:uppercase; margin-top:-2px;}
+
+  nav ul{list-style:none; display:flex; gap:28px;}
+  nav a{
+    font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.06em;
+    color:var(--steel); text-decoration:none; text-transform:uppercase;
+    position:relative; padding-bottom:4px; transition:color .2s ease;
+  }
+  nav a::after{
+    content:''; position:absolute; left:0; bottom:0; width:0; height:1px;
+    background:var(--beacon); transition:width .25s ease;
+  }
+  nav a:hover, nav a.active{color:var(--ink);}
+  nav a:hover::after, nav a.active::after{width:100%;}
+  .nav-toggle{display:none;}
+
+  #theme-toggle{
+    font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.06em;
+    background:transparent; border:1px solid var(--line-strong); color:var(--ink);
+    padding:8px 14px; cursor:pointer; text-transform:uppercase;
+    transition:background .2s ease, color .2s ease, border-color .2s ease;
+  }
+  #theme-toggle:hover{background:var(--ink); color:var(--paper);}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative; min-height:100vh; display:flex; flex-direction:column;
+    justify-content:center; padding:0 32px;
+  }
+  #rocket-canvas{
+    position:absolute; inset:0; width:100%; height:100%; z-index:1;
+  }
+  .hero-inner{position:relative; z-index:2; max-width:var(--maxw); margin:0 auto; width:100%; pointer-events:none;}
+  .hero-eyebrow{
+    font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:0.18em;
+    color:var(--steel); text-transform:uppercase; margin-bottom:18px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .hero-eyebrow .dot{width:6px; height:6px; background:var(--beacon); border-radius:50%; display:inline-block; animation:pulse 1.8s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:.25;}}
+
+  .hero h1{
+    font-family:'Big Shoulders Display', sans-serif; font-weight:800;
+    font-size:clamp(58px, 10vw, 148px); line-height:0.86; letter-spacing:-0.01em;
+    color:var(--ink);
+  }
+  .hero-sub{
+    max-width:520px; margin-top:26px; font-size:16px; line-height:1.6; color:var(--steel);
+  }
+  .hero-sub strong{color:var(--ink); font-weight:600;}
+
+  .telemetry{
+    position:absolute; right:32px; bottom:120px; z-index:2;
+    text-align:right; font-family:'JetBrains Mono', monospace;
+    color:var(--steel); font-size:11px; letter-spacing:0.05em;
+  }
+  .telemetry .row{display:flex; justify-content:flex-end; gap:10px; margin-bottom:4px;}
+  .telemetry .val{color:var(--ink); font-weight:600; min-width:64px; display:inline-block;}
+
+  .scroll-cue{
+    position:absolute; left:32px; bottom:40px; z-index:2;
+    display:flex; align-items:center; gap:10px;
+    font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.14em;
+    color:var(--steel); text-transform:uppercase;
+  }
+  .scroll-cue .line{width:32px; height:1px; background:var(--line-strong); position:relative; overflow:hidden;}
+  .scroll-cue .line::after{
+    content:''; position:absolute; left:-100%; top:0; width:100%; height:100%; background:var(--beacon);
+    animation:scrollline 1.6s ease-in-out infinite;
+  }
+  @keyframes scrollline{0%{left:-100%;} 50%{left:0;} 100%{left:100%;}}
+
+  /* ---------- SECTION SHELL ---------- */
+  section.block{
+    position:relative; padding:120px 32px; border-top:1px solid var(--line);
+  }
+  .section-in{max-width:var(--maxw); margin:0 auto;}
+  .sec-head{
+    display:flex; justify-content:space-between; align-items:flex-end;
+    margin-bottom:64px; gap:24px; flex-wrap:wrap;
+  }
+  .sec-code{
+    font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--beacon);
+    letter-spacing:0.14em; margin-bottom:14px; display:block;
+  }
+  .sec-title{
+    font-family:'Big Shoulders Display', sans-serif; font-weight:800;
+    font-size:clamp(36px, 5vw, 64px); line-height:0.92; letter-spacing:-0.01em;
+  }
+  .sec-desc{max-width:340px; color:var(--steel); font-size:14.5px; line-height:1.65;}
+
+  .reveal{opacity:0; transform:translateY(28px); transition:opacity .7s ease, transform .7s ease;}
+  .reveal.show{opacity:1; transform:translateY(0);}
+
+  /* ---------- EXEC COMMITTEE ---------- */
+  .pillars{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); margin-bottom:72px;}
+  .pillar{background:var(--paper); padding:32px 24px; transition:background .25s ease;}
+  .pillar:hover{background:var(--paper-2);}
+  .pillar .n{font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--beacon); margin-bottom:18px; display:block;}
+  .pillar h4{font-family:'Big Shoulders Display', sans-serif; font-weight:700; font-size:21px; text-transform:uppercase; margin-bottom:10px; letter-spacing:0.01em;}
+  .pillar p{font-size:13px; color:var(--steel); line-height:1.6;}
+
+  .roster{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line);}
+  .seat{background:var(--paper); padding:28px 24px; position:relative;}
+  .seat .role{font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--steel); letter-spacing:0.1em; text-transform:uppercase;}
+  .seat .name{font-family:'Big Shoulders Display', sans-serif; font-weight:700; font-size:24px; margin:8px 0 6px; text-transform:uppercase;}
+  .seat .tag{font-size:12px; color:var(--steel-light);}
+  .seat .badge{
+    position:absolute; top:24px; right:24px; width:8px; height:8px;
+    border:1px solid var(--line-strong); border-radius:50%;
+  }
+  .seat.open{border-style:dashed;}
+  .seat.open .name{color:var(--steel-light);}
+
+  /* ---------- EVENTS ---------- */
+  .event-list{display:flex; flex-direction:column;}
+  .event-row{
+    display:grid; grid-template-columns:90px 1fr auto; gap:24px; align-items:center;
+    padding:26px 0; border-bottom:1px solid var(--line); transition:padding-left .25s ease;
+  }
+  .event-row:hover{padding-left:10px; border-color:var(--line-strong);}
+  .event-row .date{font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--beacon);}
+  .event-row h4{font-family:'Big Shoulders Display', sans-serif; font-weight:700; font-size:22px; text-transform:uppercase;}
+  .event-row .meta{font-size:12.5px; color:var(--steel); margin-top:4px;}
+  .event-row .status{
+    font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.08em;
+    padding:6px 12px; border:1px solid var(--line-strong); text-transform:uppercase; white-space:nowrap;
+  }
+  .event-row .status.open{border-color:var(--beacon); color:var(--beacon);}
+
+  /* ---------- MEMBER SECTION ---------- */
+  .member-wrap{display:grid; grid-template-columns:1.1fr 0.9fr; gap:1px; background:var(--line); border:1px solid var(--line);}
+  .member-panel{background:var(--paper); padding:44px;}
+  .member-panel h3{font-family:'Big Shoulders Display', sans-serif; font-size:26px; text-transform:uppercase; margin-bottom:16px;}
+  .member-panel p{color:var(--steel); font-size:14px; line-height:1.7; margin-bottom:26px;}
+  .perk{display:flex; gap:14px; padding:14px 0; border-top:1px solid var(--line);}
+  .perk:first-of-type{border-top:none;}
+  .perk .idx{font-family:'JetBrains Mono', monospace; color:var(--beacon); font-size:12px;}
+  .perk .t{font-size:13.5px; color:var(--ink);}
+  .id-card{
+    padding:44px; display:flex; flex-direction:column; justify-content:space-between;
+    background:var(--ink); color:var(--paper);
+  }
+  .id-card .top .mono{font-size:10px; letter-spacing:0.14em; color:var(--steel-light); text-transform:uppercase;}
+  .id-card .id-name{font-family:'Big Shoulders Display', sans-serif; font-size:40px; margin-top:18px; line-height:0.95; text-transform:uppercase;}
+  .id-card .id-role{font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--beacon); margin-top:10px; letter-spacing:0.06em;}
+  .id-card .barcode{margin-top:32px; display:flex; gap:2px; height:34px; align-items:flex-end;}
+  .id-card .barcode div{width:3px; background:var(--paper); opacity:.7;}
+  form.join{margin-top:28px; display:flex; gap:0; border:1px solid var(--line-strong);}
+  form.join input{flex:1; border:none; background:transparent; padding:14px 16px; font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--ink); outline:none;}
+  form.join input::placeholder{color:var(--steel-light);}
+  form.join button{
+    border:none; background:var(--ink); color:var(--paper); padding:0 22px;
+    font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase;
+    cursor:pointer; transition:background .2s ease;
+  }
+  form.join button:hover{background:var(--beacon);}
+
+  /* ---------- ANNOUNCEMENTS ---------- */
+  .ann-list{display:flex; flex-direction:column; gap:1px; background:var(--line); border:1px solid var(--line);}
+  .ann{background:var(--paper); padding:24px 26px; display:grid; grid-template-columns:120px 1fr; gap:22px;}
+  .ann .when{font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--steel);}
+  .ann .when b{display:block; color:var(--ink); font-size:11px;}
+  .ann h5{font-size:15px; font-weight:600; margin-bottom:6px;}
+  .ann p{font-size:13px; color:var(--steel); line-height:1.6;}
+  .pin{color:var(--beacon); font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.08em; margin-bottom:8px; display:inline-block;}
+
+  /* ---------- DISCUSSION ---------- */
+  .thread-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:1px; background:var(--line); border:1px solid var(--line);}
+  .thread{background:var(--paper); padding:28px; display:flex; flex-direction:column; gap:10px;}
+  .thread .top{display:flex; justify-content:space-between; align-items:center;}
+  .thread .cat{font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--beacon); text-transform:uppercase; letter-spacing:0.08em;}
+  .thread .replies{font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--steel);}
+  .thread h5{font-size:16px; font-weight:600;}
+  .thread p{font-size:13px; color:var(--steel); line-height:1.6;}
+  .thread .foot{display:flex; justify-content:space-between; font-size:11px; color:var(--steel-light); margin-top:8px; font-family:'JetBrains Mono', monospace;}
+
+  /* ---------- LEADERBOARD ---------- */
+  .lb-table{width:100%; border-collapse:collapse;}
+  .lb-table th{
+    text-align:left; font-family:'JetBrains Mono', monospace; font-size:10px; text-transform:uppercase;
+    color:var(--steel); letter-spacing:0.08em; padding:0 16px 14px; border-bottom:1px solid var(--line-strong);
+  }
+  .lb-table td{padding:18px 16px; border-bottom:1px solid var(--line); font-size:14px;}
+  .lb-table tr:hover td{background:var(--paper-2);}
+  .lb-rank{font-family:'JetBrains Mono', monospace; color:var(--steel);}
+  .lb-rank.gold{color:var(--beacon); font-weight:600;}
+  .lb-team{font-weight:600;}
+  .lb-cat{font-size:11px; color:var(--steel);}
+  .lb-pts{font-family:'JetBrains Mono', monospace; text-align:right; font-weight:600;}
+  .lb-bar{height:3px; background:var(--line); margin-top:8px; position:relative; overflow:hidden;}
+  .lb-bar div{position:absolute; left:0; top:0; bottom:0; background:var(--beacon);}
+
+  /* ---------- NOTICES ---------- */
+  .notice-strip{border:1px solid var(--line-strong); padding:6px;}
+  .notice{
+    display:grid; grid-template-columns:26px 90px 1fr 100px; gap:18px; align-items:center;
+    padding:16px 18px; border-bottom:1px solid var(--line);
+  }
+  .notice:last-child{border-bottom:none;}
+  .notice .flag{width:8px; height:8px; background:var(--beacon);}
+  .notice .flag.low{background:var(--line-strong);}
+  .notice .code{font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--steel);}
+  .notice .txt{font-size:13.5px;}
+  .notice .stamp{font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--steel-light); text-align:right;}
+
+  footer{padding:60px 32px 40px; border-top:1px solid var(--line);}
+  .foot-in{max-width:var(--maxw); margin:0 auto; display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:24px;}
+  footer .fmark{font-family:'Big Shoulders Display', sans-serif; font-weight:800; font-size:22px;}
+  footer .fmeta{font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--steel-light); text-align:right; line-height:1.8;}
+
+  @media (max-width:860px){
+    .pillars{grid-template-columns:repeat(2,1fr);}
+    .roster{grid-template-columns:1fr;}
+    .member-wrap{grid-template-columns:1fr;}
+    .thread-grid{grid-template-columns:1fr;}
+    .ann{grid-template-columns:1fr; gap:6px;}
+    .notice{grid-template-columns:16px 60px 1fr; }
+    .notice .stamp{display:none;}
+    nav ul{display:none;}
+    .telemetry{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<header>
+  <div class="brand">
+    <div class="brand-mark"><span>AE</span></div>
+    <div class="brand-name">AESA<small>ACPCE · Mumbai University</small></div>
+  </div>
+  <nav>
+    <ul>
+      <li><a href="#committee" class="nav-link">Committee</a></li>
+      <li><a href="#events" class="nav-link">Events</a></li>
+      <li><a href="#member" class="nav-link">Members</a></li>
+      <li><a href="#announcements" class="nav-link">Announcements</a></li>
+      <li><a href="#discussion" class="nav-link">Discussion</a></li>
+      <li><a href="#leaderboard" class="nav-link">Leaderboard</a></li>
+      <li><a href="#notices" class="nav-link">Notices</a></li>
+    </ul>
+  </nav>
+  <button id="theme-toggle" class="mono">☾ DARK</button>
+</header>
+
+<!-- ================= HERO ================= -->
+<section class="hero">
+  <canvas id="rocket-canvas"></canvas>
+  <div class="hero-inner">
+    <div class="hero-eyebrow"><span class="dot"></span> A.C. PATIL COLLEGE OF ENGINEERING — DEPT. OF AERONAUTICAL ENGINEERING</div>
+    <h1>AESA</h1>
+    <p class="hero-sub">The <strong>Aeronautical Engineering Students' Association</strong> — where coursework turns into hardware. Design reviews, build nights, launch days, and the people who make them happen.</p>
+  </div>
+  <div class="telemetry mono">
+    <div class="row">ALT&nbsp;<span class="val" id="tele-alt">0000 M</span></div>
+    <div class="row">VEL&nbsp;<span class="val" id="tele-vel">000 M/S</span></div>
+    <div class="row">STAGE&nbsp;<span class="val" id="tele-stage">HOLD</span></div>
+  </div>
+  <div class="scroll-cue"><div class="line"></div> Scroll to descend</div>
+</section>
+
+<!-- ================= EXECUTIVE COMMITTEE ================= -->
+<section class="block" id="committee">
+  <div class="section-in">
+    <div class="sec-head reveal">
+      <div>
+        <span class="sec-code">SEC.01 — GOVERNANCE</span>
+        <h2 class="sec-title">Executive<br>Committee</h2>
+      </div>
+      <p class="sec-desc">Four working pillars keep AESA running like a checklist — not a chain of command. Every seat below answers to one of them.</p>
+    </div>
+
+    <div class="pillars reveal">
+      <div class="pillar">
+        <span class="n">01</span>
+        <h4>Role & Responsibilities</h4>
+        <p>Clear ownership per seat — no overlap, no gaps. Every member knows exactly what they're accountable for, every semester.</p>
+      </div>
+      <div class="pillar">
+        <span class="n">02</span>
+        <h4>Innovation & Ideas</h4>
+        <p>The pipeline for new builds, competitions, and projects — from FPV frames to launch pads — before they hit the workshop floor.</p>
+      </div>
+      <div class="pillar">
+        <span class="n">03</span>
+        <h4>Event Coordination</h4>
+        <p>Scheduling, logistics, faculty sign-off, and venue booking for every workshop, seminar, and competition on the calendar.</p>
+      </div>
+      <div class="pillar">
+        <span class="n">04</span>
+        <h4>Inter-Committee Coordination</h4>
+        <p>The link between AESA, NCC Air Wing, and other student bodies — so effort doesn't get duplicated across clubs.</p>
+      </div>
+    </div>
+
+    <div class="roster reveal">
+      <div class="seat"><div class="badge"></div><span class="role mono">President</span><div class="name">Swajala Gawand</div><span class="tag">Governance</span></div>
+      <div class="seat"><div class="badge"></div><span class="role mono">Vice President</span><div class="name">Shravani Gosavi</div><span class="tag">Governance</span></div>
+      <div class="seat"><div class="badge"></div><span class="role mono">Secretary</span><div class="name">Balraj Pattanayak</div><span class="tag">Governance</span></div>
+      <div class="seat"><div class="badge"></div><span class="role mono">Vice Secretary</span><div class="name">Soham Ambre</div><span class="tag">Governance</span></div>
+      <div class="seat"><div class="badge"></div><span class="role mono">Treasurer</span><div class="name">Tanmay Pawar</div><span class="tag">Finance</span></div>
+      <div class="seat"><div class="badge"></div><span class="role mono">Vice Treasurer</span><div class="name">Suruti Choudary</div><span class="tag">Finance</span></div>
+      <div class="seat"><div class="badge"></div><span class="role mono">Technical Head</span><div class="name">Parth Trimbake</div><span class="tag">Innovation & Ideas</span></div>
+      <div class="seat"><div class="badge"></div><span class="role mono">Creative Head</span><div class="name">Sara Mahadik</div><span class="tag">Design & Media</span></div>
+      <div class="seat"><div class="badge"></div><span class="role mono">Sports Head</span><div class="name">Vedant Gaikwad</div><span class="tag">Events & Culture</span></div>
+      <div class="seat"><div class="badge"></div><span class="role mono">Photography Head</span><div class="name">Pratik Tamhankar</div><span class="tag">Design & Media</span></div>
+      <div class="seat"><div class="badge"></div><span class="role mono">Culture Head</span><div class="name">Yukthi Devadiga</div><span class="tag">Events & Culture</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= EVENTS & WORKSHOPS ================= -->
+<section class="block" id="events">
+  <div class="section-in">
+    <div class="sec-head reveal">
+      <div>
+        <span class="sec-code">SEC.02 — CALENDAR</span>
+        <h2 class="sec-title">Events &<br>Workshops</h2>
+      </div>
+      <p class="sec-desc">From hands-on build sessions to guest seminars — everything AESA runs this term, in order.</p>
+    </div>
+
+    <div class="event-list reveal">
+      <div class="event-row">
+        <span class="date mono">SEP 04</span>
+        <div><h4>FPV Drone Build Workshop</h4><div class="meta">Frame assembly, motor mounting & basic tuning — bring your own kit or use club stock.</div></div>
+        <span class="status open">Registering</span>
+      </div>
+      <div class="event-row">
+        <span class="date mono">SEP 19</span>
+        <div><h4>Guest Seminar — Careers in Aerospace</h4><div class="meta">Industry speaker session, open to all engineering branches.</div></div>
+        <span class="status open">Registering</span>
+      </div>
+      <div class="event-row">
+        <span class="date mono">OCT 03</span>
+        <div><h4>Solid-Motor Launch Day</h4><div class="meta">Mini-project rocket launches from the department launch pad — safety briefing mandatory.</div></div>
+        <span class="status">Planning</span>
+      </div>
+      <div class="event-row">
+        <span class="date mono">OCT 22</span>
+        <div><h4>Thrust Calculation Lab</h4><div class="meta">Static test-stand measurements for second-year mini-project teams.</div></div>
+        <span class="status">Planning</span>
+      </div>
+      <div class="event-row">
+        <span class="date mono">NOV 08</span>
+        <div><h4>AESA Design Review Night</h4><div class="meta">Open critique of ongoing student builds — drones, rockets, and CAD projects.</div></div>
+        <span class="status">Planning</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MEMBER SECTION ================= -->
+<section class="block" id="member">
+  <div class="section-in">
+    <div class="sec-head reveal">
+      <div>
+        <span class="sec-code">SEC.03 — MEMBERSHIP</span>
+        <h2 class="sec-title">Member<br>Section</h2>
+      </div>
+      <p class="sec-desc">One membership, every workshop, every build, every launch.</p>
+    </div>
+
+    <div class="member-wrap reveal">
+      <div class="member-panel">
+        <h3>What membership unlocks</h3>
+        <p>AESA membership is open to all Aeronautical Engineering students at ACPCE, first year through final year.</p>
+        <div class="perk"><span class="idx mono">01</span><span class="t">Priority registration for workshops & launch days</span></div>
+        <div class="perk"><span class="idx mono">02</span><span class="t">Access to club tools, drone frames & test-stand equipment</span></div>
+        <div class="perk"><span class="idx mono">03</span><span class="t">Eligibility to compete under the AESA banner</span></div>
+        <div class="perk"><span class="idx mono">04</span><span class="t">Vote in committee elections</span></div>
+        <form class="join" onsubmit="return false;">
+          <input type="text" placeholder="COLLEGE EMAIL ID">
+          <button type="submit">Join AESA</button>
+        </form>
+      </div>
+      <div class="id-card">
+        <div class="top">
+          <span class="mono">AESA · MEMBER ID</span>
+          <div class="id-name">Your<br>Name</div>
+          <div class="id-role">SECOND YEAR · AERONAUTICAL ENGG</div>
+        </div>
+        <div class="barcode" id="barcode"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ANNOUNCEMENTS ================= -->
+<section class="block" id="announcements">
+  <div class="section-in">
+    <div class="sec-head reveal">
+      <div>
+        <span class="sec-code">SEC.04 — BULLETIN</span>
+        <h2 class="sec-title">Announcements</h2>
+      </div>
+      <p class="sec-desc">Short-form updates from the committee — check before every event.</p>
+    </div>
+
+    <div class="ann-list reveal">
+      <div class="ann">
+        <div class="when"><b>AUG 13</b>2026</div>
+        <div><span class="pin">Pinned</span><h5>FPV Workshop registration closes Aug 30</h5><p>Limited kits available — first-come basis for club-provided frames.</p></div>
+      </div>
+      <div class="ann">
+        <div class="when"><b>AUG 09</b>2026</div>
+        <div><h5>Committee nominations now open</h5><p>Second and third-year students may apply for open executive seats via the Member Section.</p></div>
+      </div>
+      <div class="ann">
+        <div class="when"><b>AUG 02</b>2026</div>
+        <div><h5>Launch pad build update</h5><p>Gantry tower welding complete — static fit-check scheduled for next workshop session.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DISCUSSION ================= -->
+<section class="block" id="discussion">
+  <div class="section-in">
+    <div class="sec-head reveal">
+      <div>
+        <span class="sec-code">SEC.05 — COMMUNITY</span>
+        <h2 class="sec-title">Discussion</h2>
+      </div>
+      <p class="sec-desc">Where builds get debugged and ideas get pressure-tested by peers.</p>
+    </div>
+
+    <form class="join" id="post-form" style="margin-bottom:32px; flex-wrap:wrap;">
+      <input type="text" id="post-author" placeholder="YOUR NAME" required style="min-width:140px;">
+      <input type="text" id="post-category" placeholder="CATEGORY (e.g. Drone Build)" required style="min-width:160px;">
+      <input type="text" id="post-title" placeholder="THREAD TITLE" required style="min-width:220px;">
+      <input type="text" id="post-body" placeholder="WHAT'S ON YOUR MIND" required style="min-width:260px;">
+      <button type="submit">Post</button>
+    </form>
+    <div class="thread-grid reveal" id="thread-grid">
+      <div class="thread"><p class="mono">Loading discussion threads…</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= LEADERBOARD ================= -->
+<section class="block" id="leaderboard">
+  <div class="section-in">
+    <div class="sec-head reveal">
+      <div>
+        <span class="sec-code">SEC.06 — STANDINGS</span>
+        <h2 class="sec-title">Competitions &<br>Leaderboard</h2>
+      </div>
+      <p class="sec-desc">Points earned across inter-college drone races, design challenges & hackathons.</p>
+    </div>
+
+    <table class="lb-table reveal">
+      <thead>
+        <tr><th>Rank</th><th>Team</th><th>Category</th><th style="text-align:right">Points</th></tr>
+      </thead>
+      <tbody id="leaderboard-body">
+        <tr><td colspan="4" class="mono">Loading standings…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ================= NOTICES ================= -->
+<section class="block" id="notices">
+  <div class="section-in">
+    <div class="sec-head reveal">
+      <div>
+        <span class="sec-code">SEC.07 — OFFICIAL</span>
+        <h2 class="sec-title">Notices</h2>
+      </div>
+      <p class="sec-desc">Formal notices from the department and committee — highest priority items flagged.</p>
+    </div>
+
+    <div class="notice-strip reveal" id="notice-strip">
+      <div class="notice"><span class="txt mono">Loading notices…</span></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-in">
+    <div class="fmark">AESA</div>
+    <div class="fmeta">
+      DEPT. OF AERONAUTICAL ENGINEERING<br>
+      A.C. PATIL COLLEGE OF ENGINEERING · MUMBAI UNIVERSITY<br>
+      BUILT BY THE CLASS THAT FLIES IT
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+/* ---------------- SUPABASE BACKEND ---------------- */
+const SUPABASE_URL = 'https://qooasyfiltgpcxohiovn.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_gykZhkI8PSFa12IeoiQIEA_OAtPB33E';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+function timeAgo(dateStr){
+  const diffMs = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diffMs/60000);
+  if(mins < 60) return mins <= 1 ? 'Just now' : mins + ' min ago';
+  const hrs = Math.floor(mins/60);
+  if(hrs < 24) return hrs + 'h ago';
+  const days = Math.floor(hrs/24);
+  return days === 1 ? 'Yesterday' : days + ' days ago';
+}
+function fmtDate(dateStr){
+  return new Date(dateStr).toLocaleDateString('en-GB', {day:'2-digit', month:'short'}).toUpperCase().replace(' ', ' ');
+}
+
+/* ----- Discussion threads ----- */
+async function loadPosts(){
+  const grid = document.getElementById('thread-grid');
+  const { data, error } = await sb.from('posts').select('*').order('created_at', {ascending:false}).limit(20);
+  if(error){ grid.innerHTML = '<div class="thread"><p>Could not load threads.</p></div>'; console.error(error); return; }
+  if(!data || data.length === 0){ grid.innerHTML = '<div class="thread"><p>No threads yet — start the first one above.</p></div>'; return; }
+  grid.innerHTML = data.map(p => `
+    <div class="thread">
+      <div class="top"><span class="cat">${p.category || 'General'}</span><span class="replies mono">0 replies</span></div>
+      <h5>${p.title}</h5>
+      <p>${p.body || ''}</p>
+      <div class="foot"><span>Started by ${p.author || 'Member'}</span><span>${timeAgo(p.created_at)}</span></div>
+    </div>`).join('');
+}
+
+document.getElementById('post-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const author = document.getElementById('post-author').value.trim();
+  const category = document.getElementById('post-category').value.trim();
+  const title = document.getElementById('post-title').value.trim();
+  const body = document.getElementById('post-body').value.trim();
+  if(!author || !title) return;
+  const { error } = await sb.from('posts').insert([{ author, category, title, body }]);
+  if(error){ alert('Could not post — check console.'); console.error(error); return; }
+  e.target.reset();
+  loadPosts();
+});
+
+/* ----- Leaderboard ----- */
+async function loadLeaderboard(){
+  const body = document.getElementById('leaderboard-body');
+  const { data, error } = await sb.from('leaderboard').select('*').order('points', {ascending:false}).limit(10);
+  if(error || !data || data.length === 0){ body.innerHTML = '<tr><td colspan="4">No standings yet.</td></tr>'; if(error) console.error(error); return; }
+  const maxPts = Math.max(...data.map(r => r.points || 0), 1);
+  body.innerHTML = data.map((r, i) => `
+    <tr>
+      <td class="lb-rank ${i===0?'gold':''}">${String(i+1).padStart(2,'0')}</td>
+      <td><div class="lb-team">${r.team}</div><div class="lb-bar"><div style="width:${Math.round((r.points||0)/maxPts*100)}%"></div></div></td>
+      <td class="lb-cat">${r.category || ''}</td>
+      <td class="lb-pts">${r.points ?? 0}</td>
+    </tr>`).join('');
+}
+
+/* ----- Notices ----- */
+async function loadNotices(){
+  const strip = document.getElementById('notice-strip');
+  const { data, error } = await sb.from('notices').select('*').order('created_at', {ascending:false}).limit(10);
+  if(error || !data || data.length === 0){ strip.innerHTML = '<div class="notice"><span class="txt">No notices yet.</span></div>'; if(error) console.error(error); return; }
+  strip.innerHTML = data.map(n => `
+    <div class="notice">
+      <span class="flag ${n.flag === 'low' ? 'low' : ''}"></span>
+      <span class="code mono">${n.code || ''}</span>
+      <span class="txt">${n.text}</span>
+      <span class="stamp mono">${fmtDate(n.created_at)}</span>
+    </div>`).join('');
+}
+
+loadPosts();
+loadLeaderboard();
+loadNotices();
+</script>
+<script>
+/* ---------------- DARK MODE ---------------- */
+const themeToggle = document.getElementById('theme-toggle');
+function applyTheme(dark){
+  document.body.classList.toggle('dark', dark);
+  themeToggle.textContent = dark ? '☀ LIGHT' : '☾ DARK';
+  localStorage.setItem('aesa-theme', dark ? 'dark' : 'light');
+  if(window.setRocketTheme) window.setRocketTheme(dark);
+}
+themeToggle.addEventListener('click', () => {
+  applyTheme(!document.body.classList.contains('dark'));
+});
+applyTheme(localStorage.getItem('aesa-theme') === 'dark');
+
+/* ---------------- NAV ACTIVE STATE ---------------- */
+const navLinks = document.querySelectorAll('.nav-link');
+const sections = document.querySelectorAll('section.block');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(sec => {
+    const rect = sec.getBoundingClientRect();
+    if(rect.top <= 120 && rect.bottom >= 120) current = sec.id;
+  });
+  navLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + current));
+});
+
+/* ---------------- REVEAL ON SCROLL ---------------- */
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('show'); });
+}, {threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+/* ---------------- BARCODE ---------------- */
+const bc = document.getElementById('barcode');
+for(let i=0;i<38;i++){
+  const b = document.createElement('div');
+  b.style.height = (30 + Math.random()*70) + '%';
+  b.style.opacity = Math.random() > 0.5 ? 0.9 : 0.35;
+  bc.appendChild(b);
+}
+
+/* ---------------- THREE.JS BACKGROUND CRAFT ---------------- */
+(function(){
+  const canvas = document.getElementById('rocket-canvas');
+  const heroEl = document.querySelector('.hero');
+  let W = heroEl.clientWidth, H = heroEl.clientHeight;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(40, W/H, 0.1, 100);
+  camera.position.set(0, 0, 12);
+
+  const renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(W, H);
+
+  const inkColor = 0x1a1a1d;
+  const beaconColor = 0xff5a1f;
+  const isMobile = W <= 860;
+  const BASE_OPACITY = isMobile ? 0.4 : 0.92;
+
+  // Lighting so solid materials actually shade
+  scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+  const keyLight = new THREE.DirectionalLight(0xffffff, 1.1);
+  keyLight.position.set(4, 5, 6);
+  scene.add(keyLight);
+  const rimLight = new THREE.DirectionalLight(0xff8a4a, 0.6);
+  rimLight.position.set(-3, -2, -4);
+  scene.add(rimLight);
+
+  const craft = new THREE.Group();
+  // push off-center and back so it sits behind the headline, not on top of it
+  // on mobile, push it further back and smaller so it reads purely as background
+  craft.position.set(isMobile ? 1.2 : 3.4, -0.2, isMobile ? -7 : -2);
+  const craftScale = isMobile ? 0.55 : 0.95;
+  craft.scale.set(craftScale, craftScale, craftScale);
+
+  const artemisOrange = 0xB6531C;
+  const white = 0xEDEBE4;
+
+  const hullMat = new THREE.MeshStandardMaterial({color: artemisOrange, metalness:0.05, roughness:0.85, transparent:true, opacity:BASE_OPACITY});
+  const finMat = new THREE.MeshStandardMaterial({color: white, metalness:0.15, roughness:0.6, transparent:true, opacity:BASE_OPACITY});
+  const accentMat = new THREE.MeshStandardMaterial({color: white, metalness:0.1, roughness:0.6, transparent:true, opacity:BASE_OPACITY});
+
+  // Core stage — tall, slightly tapered, matte rust-orange (SLS foam-insulation look)
+  const profile = [
+    new THREE.Vector2(0.0, -2.35),
+    new THREE.Vector2(0.24, -2.15),
+    new THREE.Vector2(0.27, -1.4),
+    new THREE.Vector2(0.28, 1.1),
+    new THREE.Vector2(0.27, 1.9),
+    new THREE.Vector2(0.24, 2.1)
+  ];
+  const hullGeo = new THREE.LatheGeometry(profile, 32);
+  const hull = new THREE.Mesh(hullGeo, hullMat);
+  craft.add(hull);
+
+  // White ring where the capsule/service module meets the core
+  const bandGeo = new THREE.TorusGeometry(0.25, 0.025, 10, 40);
+  const band = new THREE.Mesh(bandGeo, accentMat);
+  band.rotation.x = Math.PI/2;
+  band.position.y = 2.05;
+  craft.add(band);
+
+  // Orion capsule (white, tapered cone) sitting on the core
+  const capsuleGeo = new THREE.CylinderGeometry(0.13, 0.24, 0.55, 20, 1, false);
+  const capsule = new THREE.Mesh(capsuleGeo, finMat);
+  capsule.position.y = 2.4;
+  craft.add(capsule);
+
+  // Launch abort tower — thin spike above the capsule
+  const towerGeo = new THREE.CylinderGeometry(0.02, 0.03, 0.55, 8);
+  const tower = new THREE.Mesh(towerGeo, finMat);
+  tower.position.y = 2.95;
+  craft.add(tower);
+  const towerTipGeo = new THREE.ConeGeometry(0.03, 0.18, 8);
+  const towerTip = new THREE.Mesh(towerTipGeo, finMat);
+  towerTip.position.y = 3.3;
+  craft.add(towerTip);
+
+  // Twin white solid rocket boosters (segmented) — the SLS signature look
+  const boosterMats = [];
+  [-0.42, 0.42].forEach(x => {
+    const bGeo = new THREE.CylinderGeometry(0.11, 0.13, 3.6, 16);
+    const bMat = new THREE.MeshStandardMaterial({color: white, metalness:0.1, roughness:0.6, transparent:true, opacity:BASE_OPACITY});
+    const booster = new THREE.Mesh(bGeo, bMat);
+    booster.position.set(x, -0.7, 0);
+    craft.add(booster);
+    boosterMats.push(bMat);
+    const bCap = new THREE.Mesh(new THREE.ConeGeometry(0.11, 0.35, 16), bMat);
+    bCap.position.set(x, 1.28, 0);
+    craft.add(bCap);
+    // dark segment rings along each booster (SLS SRBs are visibly segmented)
+    [-1.9, -1.1, -0.3, 0.5].forEach(segY => {
+      const segRing = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.012, 6, 20), new THREE.MeshStandardMaterial({color:0x1a1a1d, roughness:0.7}));
+      segRing.rotation.x = Math.PI/2;
+      segRing.position.set(x, segY, 0);
+      craft.add(segRing);
+    });
+    // small engine glow under each booster
+    const eGlow = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.35, 12), new THREE.MeshBasicMaterial({color: beaconColor, transparent:true, opacity:0.5, blending:THREE.AdditiveBlending, depthWrite:false}));
+    eGlow.position.set(x, -2.55, 0);
+    eGlow.rotation.x = Math.PI;
+    craft.add(eGlow);
+  });
+
+  // Main engine cluster glow (4x RS-25, bottom of core)
+  const mainGlow = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.6, 16), new THREE.MeshBasicMaterial({color: beaconColor, transparent:true, opacity:0.55, blending:THREE.AdditiveBlending, depthWrite:false}));
+  mainGlow.position.y = -2.55;
+  mainGlow.rotation.x = Math.PI;
+  craft.add(mainGlow);
+
+  // Panel-line rings along the core stage
+  const ringMats = [];
+  [1.5, 0.5, -0.5, -1.5].forEach(y => {
+    const ringGeo = new THREE.TorusGeometry(0.28, 0.006, 8, 32);
+    const rMat = new THREE.MeshBasicMaterial({color: 0x1a1a1d, transparent:true, opacity:0.35});
+    const ring = new THREE.Mesh(ringGeo, rMat);
+    ring.rotation.x = Math.PI/2;
+    ring.position.y = y;
+    craft.add(ring);
+    ringMats.push(rMat);
+  });
+
+  scene.add(craft);
+
+  // Large slow-spinning orbital ring — the main "background art" element
+  const orbit = new THREE.Group();
+  orbit.position.copy(craft.position);
+  orbit.rotation.x = Math.PI/2.6;
+  orbit.rotation.z = 0.3;
+  const orbitGeo = new THREE.TorusGeometry(3.4, 0.006, 8, 96);
+  const orbitMat = new THREE.MeshBasicMaterial({color: inkColor, transparent:true, opacity:0.22});
+  const orbitRing = new THREE.Mesh(orbitGeo, orbitMat);
+  orbit.add(orbitRing);
+  const orbitGeo2 = new THREE.TorusGeometry(4.1, 0.005, 8, 96);
+  const orbitRing2 = new THREE.Mesh(orbitGeo2, new THREE.MeshBasicMaterial({color: inkColor, transparent:true, opacity:0.12}));
+  orbit.add(orbitRing2);
+  scene.add(orbit);
+
+  // faint drifting particles trailing the craft
+  const particleCount = 50;
+  const pGeo = new THREE.BufferGeometry();
+  const positions = new Float32Array(particleCount*3);
+  for(let i=0;i<particleCount;i++){
+    positions[i*3] = (Math.random()-0.5)*0.4;
+    positions[i*3+1] = -2.6 - Math.random()*2.2;
+    positions[i*3+2] = (Math.random()-0.5)*0.4;
+  }
+  pGeo.setAttribute('position', new THREE.BufferAttribute(positions,3));
+  const pMat = new THREE.PointsMaterial({color: beaconColor, size:0.035, transparent:true, opacity:0.4});
+  const particles = new THREE.Points(pGeo, pMat);
+  craft.add(particles);
+
+  let mouseX = 0, mouseY = 0;
+  window.addEventListener('mousemove', (e) => {
+    mouseX = (e.clientX / window.innerWidth - 0.5);
+    mouseY = (e.clientY / window.innerHeight - 0.5);
+  });
+
+  let scrollProgress = 0;
+  window.addEventListener('scroll', () => {
+    scrollProgress = Math.min(window.scrollY / (heroEl.clientHeight*1.1), 1);
+  });
+
+  const teleAlt = document.getElementById('tele-alt');
+  const teleVel = document.getElementById('tele-vel');
+  const teleStage = document.getElementById('tele-stage');
+
+  const baseX = craft.position.x, baseY = craft.position.y;
+  let clock = new THREE.Clock();
+  function animate(){
+    requestAnimationFrame(animate);
+    const t = clock.getElapsedTime();
+
+    craft.rotation.y += 0.003;
+    craft.rotation.z = 0.05 + mouseX*0.1;
+    craft.rotation.x = mouseY*0.06;
+
+    orbit.rotation.z += 0.0015;
+
+    // ascend & fade with scroll, gentle mouse parallax
+    craft.position.y = baseY + scrollProgress * 6.0;
+    craft.position.x = baseX + mouseX * 0.5;
+    orbit.position.y = craft.position.y;
+    orbit.position.x = craft.position.x;
+    camera.position.y = -scrollProgress*1.0;
+
+    const opacity = Math.max(0, 1 - scrollProgress*1.3);
+    hullMat.opacity = BASE_OPACITY * opacity;
+    finMat.opacity = BASE_OPACITY * opacity;
+    accentMat.opacity = BASE_OPACITY * opacity;
+    boosterMats.forEach(m => m.opacity = BASE_OPACITY * opacity);
+    ringMats.forEach(m => m.opacity = 0.5 * opacity);
+    orbitMat.opacity = 0.22 * opacity;
+    orbitRing2.material.opacity = 0.12 * opacity;
+    pMat.opacity = 0.4 * opacity;
+    mainGlow.material.opacity = (0.4 + Math.sin(t*8)*0.15) * opacity;
+
+    // particle drift
+    const arr = pGeo.attributes.position.array;
+    for(let i=0;i<particleCount;i++){
+      arr[i*3+1] -= 0.018;
+      if(arr[i*3+1] < -4.8){ arr[i*3+1] = -2.6; }
+    }
+    pGeo.attributes.position.needsUpdate = true;
+
+
+    // telemetry readout
+    const alt = Math.floor(scrollProgress * 4200 + Math.sin(t*2)*3);
+    const vel = Math.floor(40 + scrollProgress * 260 + Math.sin(t*3)*2);
+    teleAlt.textContent = String(alt).padStart(4,'0') + ' M';
+    teleVel.textContent = String(vel).padStart(3,'0') + ' M/S';
+    teleStage.textContent = scrollProgress < 0.05 ? 'HOLD' : scrollProgress < 0.6 ? 'ASCENT' : 'STAGE SEP';
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  window.addEventListener('resize', () => {
+    W = heroEl.clientWidth; H = heroEl.clientHeight;
+    camera.aspect = W/H;
+    camera.updateProjectionMatrix();
+    renderer.setSize(W, H);
+  });
+
+  window.setRocketTheme = function(dark){
+    const lineColor = dark ? 0xF2F1EC : inkColor;
+    orbitMat.color.setHex(lineColor);
+    orbitRing2.material.color.setHex(lineColor);
+  };
+  window.setRocketTheme(document.body.classList.contains('dark'));
+})();
+</script>
+</body>
+</html>
